@@ -16,6 +16,7 @@ import { AppRouteModule } from './app-route.module';
 import { RecipesStartComponent } from './recipe/recipes-start/recipes-start.component';
 import { RecipeEditComponent } from './recipe/recipe-edit/recipe-edit.component';
 import { RecipeService } from './recipe/recipe.service';
+import { SlicePipe } from './shared/slice.pipe';
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import { RecipeService } from './recipe/recipe.service';
     DropdownDirective,
     RecipesStartComponent,
     RecipeEditComponent,
+    SlicePipe,
   ],
   imports: [BrowserModule, FormsModule, ReactiveFormsModule, AppRouteModule],
   providers: [ShoppingService, RecipeService],

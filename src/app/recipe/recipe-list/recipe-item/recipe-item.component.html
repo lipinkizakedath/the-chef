@@ -6,7 +6,7 @@
 >
   <div class="pull-left">
     <h4 class="list-group-item-heading">{{ recipeItem.name }}</h4>
-    <p class="list-group-item-text">{{ recipeItem.description }}</p>
+    <p class="list-group-item-text">{{ recipeItem.description | slice: 45 }}</p>
   </div>
   <span class="pull-right">
     <img
