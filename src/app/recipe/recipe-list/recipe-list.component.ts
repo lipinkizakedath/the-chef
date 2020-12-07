@@ -22,7 +22,7 @@ export class RecipeListComponent implements OnInit, OnDestroy {
     private recipeService: RecipeService,
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.subscription = this.recipeService.recipeChanged.subscribe(

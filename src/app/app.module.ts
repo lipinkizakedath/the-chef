@@ -17,6 +17,9 @@ import { RecipesStartComponent } from './recipe/recipes-start/recipes-start.comp
 import { RecipeEditComponent } from './recipe/recipe-edit/recipe-edit.component';
 import { RecipeService } from './recipe/recipe.service';
 import { SlicePipe } from './shared/slice.pipe';
+import { HttpClientModule } from '@angular/common/http';
+import { DataStorageService } from './shared/data-storage.service';
+import { AuthComponent } from './auth/auth/auth.component';
 
 @NgModule({
   declarations: [
@@ -32,9 +35,16 @@ import { SlicePipe } from './shared/slice.pipe';
     RecipesStartComponent,
     RecipeEditComponent,
     SlicePipe,
+    AuthComponent,
   ],
-  imports: [BrowserModule, FormsModule, ReactiveFormsModule, AppRouteModule],
-  providers: [ShoppingService, RecipeService],
+  imports: [
+    BrowserModule,
+    FormsModule,
+    ReactiveFormsModule,
+    AppRouteModule,
+    HttpClientModule,
+  ],
+  providers: [ShoppingService, RecipeService, DataStorageService],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
