@@ -20,6 +20,7 @@ import { SlicePipe } from './shared/slice.pipe';
 import { HttpClientModule } from '@angular/common/http';
 import { DataStorageService } from './shared/data-storage.service';
 import { AuthComponent } from './auth/auth/auth.component';
+import { LoadingSpinnerComponent } from './shared/loading-spinner/loading-spinner.component';
 
 @NgModule({
   declarations: [
@@ -36,6 +37,7 @@ import { AuthComponent } from './auth/auth/auth.component';
     RecipeEditComponent,
     SlicePipe,
     AuthComponent,
+    LoadingSpinnerComponent,
   ],
   imports: [
     BrowserModule,

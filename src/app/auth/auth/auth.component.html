@@ -1,19 +1,46 @@
 <div class="row">
   <div class="col-xs-12 col-md-4 col-md-offset-4">
-    <form>
+    <div style="text-align: center; margin-top: 50%" *ngIf="isLoading">
+      <app-loading-spinner></app-loading-spinner>
+    </div>
+    <form #authForm="ngForm" (ngSubmit)="onSubmit(authForm)" *ngIf="!isLoading">
       <div class="form-group">
         <label for="email">Email</label>
-        <input type="email" class="form-control" />
+        <input
+          type="email"
+          class="form-control"
+          name="email"
+          required
+          ngModel
+        />
       </div>
 
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" class="form-control" />
+        <input
+          type="password"
+          class="form-control"
+          name="password"
+          ngModel
+          required
+        />
       </div>
       <div>
-        <button class="btn btn-info" style="margin-right: 2px">Signup</button>
-        <button class="btn btn-warning">Switch to Login!</button>
+        <button
+          type="submit"
+          class="btn btn-info"
+          [disabled]="authForm.invalid"
+          style="margin-right: 2px"
+        >
+          {{ isLoginMode ? "Login" : "Sign Up" }}
+        </button>
+        <button type="button" class="btn btn-warning" (click)="onSwithchMode()">
+          Switch to {{ isLoginMode ? "Signup" : "Login" }}
+        </button>
       </div>
     </form>
+    <div class="alert alert-danger" style="margin-top: 10px" *ngIf="error">
+      {{ error }}
+    </div>
   </div>
 </div>
