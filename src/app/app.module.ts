@@ -17,10 +17,11 @@ import { RecipesStartComponent } from './recipe/recipes-start/recipes-start.comp
 import { RecipeEditComponent } from './recipe/recipe-edit/recipe-edit.component';
 import { RecipeService } from './recipe/recipe.service';
 import { SlicePipe } from './shared/slice.pipe';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { DataStorageService } from './shared/data-storage.service';
 import { AuthComponent } from './auth/auth/auth.component';
 import { LoadingSpinnerComponent } from './shared/loading-spinner/loading-spinner.component';
+import { AuthInterceptor } from './auth/auth.interceptor';
 
 @NgModule({
   declarations: [
@@ -46,7 +47,12 @@ import { LoadingSpinnerComponent } from './shared/loading-spinner/loading-spinne
     AppRouteModule,
     HttpClientModule,
   ],
-  providers: [ShoppingService, RecipeService, DataStorageService],
+  providers: [
+    ShoppingService,
+    RecipeService,
+    DataStorageService,
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
