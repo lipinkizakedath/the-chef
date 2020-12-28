@@ -22,8 +22,10 @@
         </button>
       </div>
     </form>
-    <div class="alert alert-danger" style="margin-top: 10px" *ngIf="error">
+    <ng-template appPlaceholder></ng-template>
+    <!-- <app-alert [message]="error" *ngIf="error" (close)="onHandleError()" ></app-alert> -->
+    <!-- <div class="alert alert-danger" style="margin-top: 10px" *ngIf="error">
       {{ error }}
-    </div>
+    </div> -->
   </div>
 </div>
