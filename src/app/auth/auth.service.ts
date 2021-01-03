@@ -4,6 +4,7 @@ import { catchError, tap } from 'rxjs/operators';
 import { BehaviorSubject, Subject, throwError } from 'rxjs';
 import { User } from './auth/user.model';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 export interface AuthResponseData {
   idToken: string;
@@ -20,8 +21,8 @@ export interface AuthResponseData {
 export class AuthService {
   // emitting data when value changes
   user = new BehaviorSubject<User>(null);
-  // firebase api key from project settings
-  API_KEY = 'AIzaSyDfJjH9XOg-8S7rZUpHLpXtrA6YoHb-6nU';
+  // firebase api key from environment
+  API_KEY = environment.firebaseAPIKey;
 
   // user signup api endpoint
   singupUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.API_KEY}`;

@@ -7,10 +7,9 @@ import { AppRouteModule } from './app-route.module';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './auth/auth.interceptor';
 
-import { RecipeModule } from './recipe/recipe.module';
-import { ShoppingModule } from './shopping-list/shopping.module';
 import { SharedModule } from './shared/shared.module';
-import { AuthModule } from './auth/auth.module';
+import { StoreModule } from '@ngrx/store';
+import { shoppingListReducer } from './shopping-list/store/shoppinglist.reducers';
 
 @NgModule({
   declarations: [AppComponent, HeaderComponent],
@@ -19,6 +18,7 @@ import { AuthModule } from './auth/auth.module';
     AppRouteModule,
     HttpClientModule,
     SharedModule,
+    StoreModule.forRoot({ shoppingList: shoppingListReducer }),
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
