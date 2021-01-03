@@ -5,8 +5,10 @@ import { Subject } from 'rxjs';
 import { Ingredient } from '../shared/ingredient.model';
 import { ShoppingService } from '../shopping-list/shopping.service';
 import { Recipe } from './recipe.model';
+import { Store } from '@ngrx/store';
+import * as fromShoppingListActions from '../shopping-list/store/shopping-list.action';
 
-@Injectable({ providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class RecipeService {
   recipeChanged = new Subject<Recipe[]>();
   private recipesFromList: Recipe[] = [
@@ -26,7 +28,8 @@ export class RecipeService {
 
   constructor(
     private shoppingService: ShoppingService,
-    private router: Router
+    private router: Router,
+    private store: Store<{ shoppingList: { ingredients: Ingredient[] } }>
   ) {}
 
   setRecipe(recipe: Recipe[]) {
@@ -43,7 +46,10 @@ export class RecipeService {
   }
 
   addIngredients(ingredients: Ingredient[]) {
-    this.shoppingService.addIngredeints(ingredients);
+    this.store.dispatch(
+      new fromShoppingListActions.AddIngredeints(ingredients)
+    );
+    // this.shoppingService.addIngredeints(ingredients);
   }
 
   addRecipie(recipe: Recipe) {
