@@ -9,7 +9,7 @@ import { AuthInterceptor } from './auth/auth.interceptor';
 
 import { SharedModule } from './shared/shared.module';
 import { StoreModule } from '@ngrx/store';
-import { shoppingListReducer } from './shopping-list/store/shoppinglist.reducers';
+import * as fromApp from './store/app.reducer';
 
 @NgModule({
   declarations: [AppComponent, HeaderComponent],
@@ -18,7 +18,7 @@ import { shoppingListReducer } from './shopping-list/store/shoppinglist.reducers
     AppRouteModule,
     HttpClientModule,
     SharedModule,
-    StoreModule.forRoot({ shoppingList: shoppingListReducer }),
+    StoreModule.forRoot(fromApp.appReducer),
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

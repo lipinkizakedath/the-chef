@@ -3,34 +3,17 @@ import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 
 import { Ingredient } from '../shared/ingredient.model';
-import { ShoppingService } from '../shopping-list/shopping.service';
 import { Recipe } from './recipe.model';
 import { Store } from '@ngrx/store';
 import * as fromShoppingListActions from '../shopping-list/store/shopping-list.action';
+import * as fromApp from '../store/app.reducer';
 
 @Injectable({ providedIn: 'root' })
 export class RecipeService {
   recipeChanged = new Subject<Recipe[]>();
-  private recipesFromList: Recipe[] = [
-    // new Recipe(
-    //   'Idely',
-    //   'Organic Kerala Idli and Vada - 2sets',
-    //   'https://static.toiimg.com/thumb/msid-70724033,imgsize-935456,width-800,height-600,resizemode-75/70724033.jpg',
-    //   [new Ingredient('Rice', 20), new Ingredient('Salt', 20)]
-    // ),
-    // new Recipe(
-    //   'Idely',
-    //   'Organic Tamilnadu Idli and Vada -3 set',
-    //   'https://static.toiimg.com/thumb/53239358.cms?imgsize=176260&width=800&height=800',
-    //   [new Ingredient('Raw rice', 20), new Ingredient('Salt', 20)]
-    // ),
-  ];
+  private recipesFromList: Recipe[] = [];
 
-  constructor(
-    private shoppingService: ShoppingService,
-    private router: Router,
-    private store: Store<{ shoppingList: { ingredients: Ingredient[] } }>
-  ) {}
+  constructor(private router: Router, private store: Store<fromApp.AppState>) {}
 
   setRecipe(recipe: Recipe[]) {
     this.recipesFromList = recipe;
@@ -49,7 +32,6 @@ export class RecipeService {
     this.store.dispatch(
       new fromShoppingListActions.AddIngredeints(ingredients)
     );
-    // this.shoppingService.addIngredeints(ingredients);
   }
 
   addRecipie(recipe: Recipe) {
