@@ -7,10 +7,13 @@ import {
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
 import { Observable, Subscription } from 'rxjs';
 import { AlertComponent } from 'src/app/shared/alert/alert.component';
 import { PlaceholderDirective } from 'src/app/shared/placeholder.directive';
 import { AuthResponseData, AuthService } from '../auth.service';
+import * as fromApp from '../../store/app.reducer';
+import * as fromAuthAction from '../store/auth.actions';
 
 @Component({
   selector: 'app-auth',
@@ -27,10 +30,16 @@ export class AuthComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private componentFactory: ComponentFactoryResolver
+    private componentFactory: ComponentFactoryResolver,
+    private store: Store<fromApp.AppState>
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit() {
+    this.store.select('auth').subscribe((authSate) => {
+      this.isLoading = authSate.loading, 
+      this.error = authSate.authError;
+    });
+  }
 
   onSwithchMode() {
     this.isLoginMode = !this.isLoginMode;
@@ -47,23 +56,26 @@ export class AuthComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     // sending http request based on the login mode
     if (this.isLoginMode) {
-      authObs = this.authService.login(email, password);
+      // authObs = this.authService.login(email, password);
+      this.store.dispatch(
+        new fromAuthAction.LoginStart({ email: email, password: password })
+      );
     } else {
       authObs = this.authService.signup(email, password);
     }
 
-    authObs.subscribe(
-      (res) => {
-        this.isLoading = false;
-        this.router.navigate(['/recipes']);
-      },
-      (error) => {
-        this.isLoading = false;
-        this.error = error;
-        this.showErrorAlert(error);
-        console.log(error);
-      }
-    );
+    // authObs.subscribe(
+    //   (res) => {
+    //     this.isLoading = false;
+    //     this.router.navigate(['/recipes']);
+    //   },
+    //   (error) => {
+    //     this.isLoading = false;
+    //     this.error = error;
+    //     this.showErrorAlert(error);
+    //     console.log(error);
+    //   }
+    // );
 
     form.reset();
   }
@@ -93,5 +105,4 @@ export class AuthComponent implements OnInit, OnDestroy {
       this.closeSubscripton.unsubscribe();
     }
   }
-  
 }
