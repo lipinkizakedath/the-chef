@@ -16,10 +16,65 @@ export interface AuthResponseData {
   registered?: boolean;
 }
 
+const handleAuthentication = (respData: any) => {
+  const expirationDate = new Date(
+    new Date().getTime() + respData.expiresIn * 1000
+  );
+  return new fromAuthActions.AuthenticateSuccess({
+    email: respData.email,
+    userId: respData.localId,
+    token: respData.idToken,
+    expirationDate: expirationDate,
+  });
+};
+
+const handleError = (errorResponse: any) => {
+  let errorMessage = 'Somethig went wrong!';
+
+  if (!errorResponse.error || !errorResponse.error.error) {
+    return of(new fromAuthActions.AuthenticateFail(errorMessage));
+  }
+
+  switch (errorResponse.error.error.message) {
+    case 'EMAIL_EXISTS':
+      errorMessage = 'Email already exists!';
+      break;
+    case 'INVALID_PASSWORD':
+      errorMessage = 'Password is not correct!';
+      break;
+    case 'EMAIL_NOT_FOUND':
+      errorMessage = 'This email address not exist!';
+      break;
+  }
+  return of(new fromAuthActions.AuthenticateFail(errorMessage));
+};
+
 @Injectable()
 export class AuthEffects {
   API_KEY = environment.firebaseAPIKey;
   loginUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${this.API_KEY}`;
+  singupUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.API_KEY}`;
+
+  @Effect()
+  authSignUp = this.actions$.pipe(
+    ofType(fromAuthActions.SIGNUP_START),
+    switchMap((signupAction: fromAuthActions.SignupStart) => {
+      return this.http
+        .post<AuthResponseData>(this.singupUrl, {
+          email: signupAction.payload.email,
+          password: signupAction.payload.password,
+          returnSecureToken: true,
+        })
+        .pipe(
+          map((respData) => {
+            return handleAuthentication(respData);
+          }),
+          catchError((errorResponse) => {
+            return handleError(errorResponse);
+          })
+        );
+    })
+  );
 
   @Effect()
   authLogin = this.actions$.pipe(
@@ -33,18 +88,10 @@ export class AuthEffects {
         })
         .pipe(
           map((respData) => {
-            const expirationDate = new Date(
-              new Date().getTime() + respData.expiresIn * 1000
-            );
-            return new fromAuthActions.Login({
-              email: respData.email,
-              userId: respData.localId,
-              token: respData.idToken,
-              expirationDate: expirationDate,
-            });
+            return handleAuthentication(respData);
           }),
-          catchError((error) => {
-            return of();
+          catchError((errorResponse) => {
+            return handleError(errorResponse);
           })
         );
     })
@@ -52,7 +99,7 @@ export class AuthEffects {
 
   @Effect({ dispatch: false })
   authSuccess = this.actions$.pipe(
-    ofType(fromAuthActions.LOGIN),
+    ofType(fromAuthActions.AUTHENTICATE_SUCCESS),
     tap(() => {
       this.router.navigate(['/']);
     })
