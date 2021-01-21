@@ -6,12 +6,10 @@ import {
   ViewChild,
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { AlertComponent } from 'src/app/shared/alert/alert.component';
 import { PlaceholderDirective } from 'src/app/shared/placeholder.directive';
-import { AuthResponseData, AuthService } from '../auth.service';
 import * as fromApp from '../../store/app.reducer';
 import * as fromAuthAction from '../store/auth.actions';
 
@@ -21,21 +19,21 @@ import * as fromAuthAction from '../store/auth.actions';
   styleUrls: ['./auth.component.css'],
 })
 export class AuthComponent implements OnInit, OnDestroy {
+  
   isLoginMode = false;
   isLoading = false;
   error: string = null;
   @ViewChild(PlaceholderDirective) alertHost: PlaceholderDirective;
   closeSubscripton: Subscription;
+  authSub: Subscription;
 
   constructor(
-    private authService: AuthService,
-    private router: Router,
     private componentFactory: ComponentFactoryResolver,
     private store: Store<fromApp.AppState>
   ) {}
 
   ngOnInit() {
-    this.store.select('auth').subscribe((authSate) => {
+    this.authSub = this.store.select('auth').subscribe((authSate) => {
       (this.isLoading = authSate.loading), (this.error = authSate.authError);
       if (this.error) {
         this.showErrorAlert(this.error);
@@ -70,7 +68,7 @@ export class AuthComponent implements OnInit, OnDestroy {
   }
 
   onHandleError() {
-    this.error = null;
+    this.store.dispatch(new fromAuthAction.ClearError());
   }
 
   private showErrorAlert(message: string) {
@@ -92,6 +90,9 @@ export class AuthComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.closeSubscripton) {
       this.closeSubscripton.unsubscribe();
+    }
+    if (this.authSub) {
+      this.authSub.unsubscribe();
     }
   }
 }

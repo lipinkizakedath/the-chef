@@ -1,4 +1,4 @@
-import { Actions, Effect, EffectsModule, ofType } from '@ngrx/effects';
+import { Actions, Effect, ofType } from '@ngrx/effects';
 import * as fromAuthActions from './auth.actions';
 import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
@@ -6,6 +6,8 @@ import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { User } from '../auth/user.model';
+import { AuthService } from '../auth.service';
 
 export interface AuthResponseData {
   idToken: string;
@@ -16,18 +18,25 @@ export interface AuthResponseData {
   registered?: boolean;
 }
 
-const handleAuthentication = (respData: any) => {
-  const expirationDate = new Date(
-    new Date().getTime() + respData.expiresIn * 1000
-  );
+// custom function for handling authentication
+const handleAuthentication = (
+  email: string,
+  userId: string,
+  token: string,
+  expiresIn: number
+) => {
+  const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
+  const user = new User(email, userId, token, expirationDate);
+  localStorage.setItem('userData', JSON.stringify(user));
   return new fromAuthActions.AuthenticateSuccess({
-    email: respData.email,
-    userId: respData.localId,
-    token: respData.idToken,
+    email: email,
+    userId: userId,
+    token: token,
     expirationDate: expirationDate,
   });
 };
 
+// custom function for handling error 
 const handleError = (errorResponse: any) => {
   let errorMessage = 'Somethig went wrong!';
 
@@ -55,6 +64,7 @@ export class AuthEffects {
   loginUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${this.API_KEY}`;
   singupUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.API_KEY}`;
 
+  // signup effect
   @Effect()
   authSignUp = this.actions$.pipe(
     ofType(fromAuthActions.SIGNUP_START),
@@ -66,8 +76,16 @@ export class AuthEffects {
           returnSecureToken: true,
         })
         .pipe(
+          tap((respData) => {
+            this.authService.setLogoutTimer(respData.expiresIn * 1000);
+          }),
           map((respData) => {
-            return handleAuthentication(respData);
+            return handleAuthentication(
+              respData.email,
+              respData.localId,
+              respData.idToken,
+              respData.expiresIn
+            );
           }),
           catchError((errorResponse) => {
             return handleError(errorResponse);
@@ -76,6 +94,7 @@ export class AuthEffects {
     })
   );
 
+  // login effect
   @Effect()
   authLogin = this.actions$.pipe(
     ofType(fromAuthActions.LOGIN_START),
@@ -87,8 +106,16 @@ export class AuthEffects {
           returnSecureToken: true,
         })
         .pipe(
+          tap((respData) => {
+            this.authService.setLogoutTimer(respData.expiresIn * 1000);
+          }),
           map((respData) => {
-            return handleAuthentication(respData);
+            return handleAuthentication(
+              respData.email,
+              respData.localId,
+              respData.idToken,
+              respData.expiresIn
+            );
           }),
           catchError((errorResponse) => {
             return handleError(errorResponse);
@@ -97,8 +124,57 @@ export class AuthEffects {
     })
   );
 
+  // Auto login effects
+  @Effect()
+  autoLogin = this.actions$.pipe(
+    ofType(fromAuthActions.AUTO_LOGIN),
+    map(() => {
+      const userData = JSON.parse(localStorage.getItem('userData'));
+      if (!userData) {
+        return { type: 'No user exist' };
+      }
+
+      const loadUser = new User(
+        userData.email,
+        userData.id,
+        userData._token,
+        new Date(userData._tokenExpireationDate)
+      );
+
+      if (loadUser.token) {
+        const expirationDuration =
+          new Date(userData._tokenExpireationDate).getTime() -
+          new Date().getTime();
+        this.authService.setLogoutTimer(expirationDuration);
+        // this.user.next(loadUser);
+
+        return new fromAuthActions.AuthenticateSuccess({
+          email: loadUser.email,
+          userId: loadUser.id,
+          token: loadUser.token,
+          expirationDate: new Date(userData._tokenExpireationDate),
+        });
+
+        // this.autoLogout(expirationDuration);
+      }
+      return { type: 'No user exist' };
+    })
+  );
+
+  // manula logout effect
   @Effect({ dispatch: false })
-  authSuccess = this.actions$.pipe(
+  authLogout = this.actions$.pipe(
+    ofType(fromAuthActions.LOGOUT),
+    tap(() => {
+      this.authService.clearLogoutTimer();
+      localStorage.removeItem('userData');
+      this.router.navigate(['/auth']);
+    })
+  );
+
+  // redirect effect when loggout 
+  @Effect({ dispatch: false })
+  authRedirect = this.actions$.pipe(
     ofType(fromAuthActions.AUTHENTICATE_SUCCESS),
     tap(() => {
       this.router.navigate(['/']);
@@ -108,6 +184,7 @@ export class AuthEffects {
   constructor(
     private actions$: Actions,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 }
