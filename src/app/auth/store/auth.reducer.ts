@@ -1,4 +1,3 @@
-import { from } from 'rxjs';
 import { User } from '../../auth//auth/user.model';
 import * as fromAuthAction from './auth.actions';
 
