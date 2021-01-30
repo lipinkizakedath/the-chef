@@ -33,10 +33,11 @@ const handleAuthentication = (
     userId: userId,
     token: token,
     expirationDate: expirationDate,
+    redirect: true,
   });
 };
 
-// custom function for handling error 
+// custom function for handling error
 const handleError = (errorResponse: any) => {
   let errorMessage = 'Somethig went wrong!';
 
@@ -153,6 +154,7 @@ export class AuthEffects {
           userId: loadUser.id,
           token: loadUser.token,
           expirationDate: new Date(userData._tokenExpireationDate),
+          redirect: false,
         });
 
         // this.autoLogout(expirationDuration);
@@ -172,12 +174,14 @@ export class AuthEffects {
     })
   );
 
-  // redirect effect when loggout 
+  // redirect effect when loggout
   @Effect({ dispatch: false })
   authRedirect = this.actions$.pipe(
     ofType(fromAuthActions.AUTHENTICATE_SUCCESS),
-    tap(() => {
-      this.router.navigate(['/']);
+    tap((authActions: fromAuthActions.AuthenticateSuccess) => {
+      if (authActions.payload.redirect) {
+        this.router.navigate(['/']);
+      }
     })
   );
 
